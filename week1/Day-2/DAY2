@@ -1,1 +1,225 @@
+CREATE TABLE Department (
+    department_id INT PRIMARY KEY,
+    name VARCHAR(50)
+);
 
+CREATE TABLE Employee (
+    emp_id INT PRIMARY KEY,
+    name VARCHAR(100),
+    age INT,
+    salary INT,
+    department_id INT,
+    hire_date DATE,
+    FOREIGN KEY (department_id) REFERENCES Department(department_id)
+);
+
+CREATE TABLE Project (
+    project_id INT PRIMARY KEY,
+    name VARCHAR(100),
+    department_id INT,
+    FOREIGN KEY (department_id) REFERENCES Department(department_id)
+);
+
+INSERT INTO Department VALUES
+(1, 'IT'),
+(2, 'HR'),
+(3, 'Finance'),
+(4, 'Marketing');
+
+INSERT INTO Employee VALUES
+(1, 'John Doe', 28, 50000, 1, '2020-01-15'),
+(2, 'Jane Smith', 34, 60000, 2, '2019-07-23'),
+(3, 'Bob Brown', 45, 80000, 1, '2018-02-12'),
+(4, 'Alice Blue', 25, 45000, 3, '2021-03-22'),
+(5, 'Charlie P.', 29, 50000, 2, '2019-12-01');
+
+INSERT INTO Project VALUES
+(1, 'Project Alpha', 1),
+(2, 'Project Beta', 2),
+(3, 'Project Gamma', 1),
+(4, 'Project Delta', 3),
+(5, 'Project Epsilon', 4);
+
+-- 26
+SELECT department_id
+FROM Employee
+GROUP BY department_id
+HAVING COUNT(*) > 2;
+
+-- 27
+SELECT department_id
+FROM Employee
+GROUP BY department_id
+HAVING AVG(salary) > 55000;
+
+-- 28
+SELECT YEAR(hire_date) AS year
+FROM Employee
+GROUP BY YEAR(hire_date)
+HAVING COUNT(*) > 1;
+
+-- 29
+SELECT department_id
+FROM Employee
+GROUP BY department_id
+HAVING SUM(salary) < 100000;
+
+-- 30
+SELECT department_id
+FROM Employee
+GROUP BY department_id
+HAVING MAX(salary) > 75000;
+
+-- 31
+SELECT * FROM Employee ORDER BY salary ASC;
+
+-- 32
+SELECT * FROM Employee ORDER BY age DESC;
+
+-- 33
+SELECT * FROM Employee ORDER BY hire_date ASC;
+
+-- 34
+SELECT * FROM Employee ORDER BY department_id, salary;
+
+-- 35
+SELECT department_id, SUM(salary) AS total_salary
+FROM Employee
+GROUP BY department_id
+ORDER BY total_salary;
+
+-- 36
+SELECT e.name, d.name AS department
+FROM Employee e
+JOIN Department d ON e.department_id = d.department_id;
+
+-- 37
+SELECT p.name, d.name AS department
+FROM Project p
+JOIN Department d ON p.department_id = d.department_id;
+
+-- 38
+SELECT e.name AS employee, p.name AS project
+FROM Employee e
+JOIN Project p ON e.department_id = p.department_id;
+
+-- 39
+SELECT e.name, d.name
+FROM Employee e
+LEFT JOIN Department d ON e.department_id = d.department_id;
+
+-- 40
+SELECT d.name, e.name
+FROM Department d
+LEFT JOIN Employee e ON d.department_id = e.department_id;
+
+-- 41
+-- (No direct relation; assume employees not linked to any department project)
+SELECT e.*
+FROM Employee e
+LEFT JOIN Project p ON e.department_id = p.department_id
+WHERE p.project_id IS NULL;
+
+-- 42
+SELECT e.name, COUNT(p.project_id) AS project_count
+FROM Employee e
+JOIN Project p ON e.department_id = p.department_id
+GROUP BY e.emp_id;
+
+-- 43
+SELECT d.*
+FROM Department d
+LEFT JOIN Employee e ON d.department_id = e.department_id
+WHERE e.emp_id IS NULL;
+
+-- 44
+SELECT name
+FROM Employee
+WHERE department_id = (
+    SELECT department_id
+    FROM Employee
+    WHERE name = 'John Doe'
+);
+
+-- 45
+SELECT d.name
+FROM Department d
+JOIN Employee e ON d.department_id = e.department_id
+GROUP BY d.department_id
+ORDER BY AVG(e.salary) DESC
+LIMIT 1;
+
+-- 46
+SELECT *
+FROM Employee
+WHERE salary = (SELECT MAX(salary) FROM Employee);
+
+-- 47
+SELECT *
+FROM Employee
+WHERE salary > (SELECT AVG(salary) FROM Employee);
+
+-- 48
+SELECT MAX(salary)
+FROM Employee
+WHERE salary < (SELECT MAX(salary) FROM Employee);
+
+-- 49
+SELECT department_id
+FROM Employee
+GROUP BY department_id
+ORDER BY COUNT(*) DESC
+LIMIT 1;
+
+-- 50
+SELECT *
+FROM Employee e
+WHERE salary > (
+    SELECT AVG(salary)
+    FROM Employee
+    WHERE department_id = e.department_id
+);
+
+-- 51 (nth highest, example 3rd)
+SELECT salary
+FROM Employee e1
+WHERE 2 = (
+    SELECT COUNT(DISTINCT salary)
+    FROM Employee e2
+    WHERE e2.salary > e1.salary
+);
+
+-- 52
+SELECT *
+FROM Employee
+WHERE age > ALL (
+    SELECT age
+    FROM Employee e
+    JOIN Department d ON e.department_id = d.department_id
+    WHERE d.name = 'HR'
+);
+
+-- 53
+SELECT department_id
+FROM Employee
+GROUP BY department_id
+HAVING AVG(salary) > 55000;
+
+-- 54
+SELECT *
+FROM Employee
+WHERE department_id IN (
+    SELECT department_id
+    FROM Project
+    GROUP BY department_id
+    HAVING COUNT(*) >= 2
+);
+
+-- 55
+SELECT *
+FROM Employee
+WHERE hire_date = (
+    SELECT hire_date
+    FROM Employee
+    WHERE name = 'Jane Smith'
+);
